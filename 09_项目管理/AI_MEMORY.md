@@ -2,7 +2,7 @@
 
 > **用途**：本文件帮助 AI 助手在每次对话中快速了解项目全貌，实现持续跟进。
 > **维护规则**：每次与 AI 协作完成重要工作后，更新本文件对应的部分。
-> **最后更新**：2026-06-11
+> **最后更新**：2026-06-12
 
 ---
 
@@ -11,12 +11,12 @@
 | 项目 | 内容 |
 |------|------|
 | **项目名称** | 假肢机械臂 |
-| **项目路径** | `d:\假肢机械臂\`（文档归档） + `D:\Dev\arm-ble\`（代码开发） |
-| **GitHub** | https://github.com/suancaiyu10108899/prosthetic-robotic-arm (Private) |
+| **项目路径** | `d:\假肢机械臂\`（文档） + `D:\Dev\arm-ble\`（固件） + `D:\Dev\arm-ble-gui\`（上位机） |
+| **GitHub** | `prosthetic-robotic-arm` / `arm-ble-firmware` / `arm-ble-gui` |
 | **负责人** | (你的名字 / 年级：大二下) |
 | **实验室** | (实验室名称) |
 | **开始时间** | 2026年6月 |
-| **当前阶段** | ✅ 板① BLE 蓝牙双向通信验证通过（2026-06-11 晚），待获取遥控器协议后编写蓝牙固件 |
+| **当前阶段** | ✅ BLE 双向验证 + arm-ble-gui 上位机完成（编译/测试通过，待板子上电实测） |
 
 ## 2. 当前任务背景
 
@@ -32,7 +32,7 @@
     │ BLE
     ▼
 ┌─ 电池模块 (电池箱) ────────────────┐
-│  ① Adafruit Feather nRF52840 Express   │  ← 🔴 当前任务：待烧录验证
+│  ① Adafruit Feather nRF52840 Express   │  ← 🔴 当前任务：BLE 调试验证
 │     (nRF52840, MicroUSB 供电+编程)     │
 │  ② 电压转换板                         │  ← 纯硬件，无需编程
 └──────────┬──────────────────────────┘
@@ -52,9 +52,10 @@
 | 项目 | 路径 | 工具 |
 |------|------|------|
 | 文档管理仓库 | `d:\假肢机械臂\` | Git + GitHub |
-| 固件开发工作区 | `D:\Dev\arm-ble\` | PlatformIO 6.1.19 (pip) |
-| Blink 测试 | ✅ 编译成功 | `src/main.cpp` |
-| 原固件备份 | `src/sketch_feb3a.bak` | 待恢复为遥控版 |
+| 固件开发 | `D:\Dev\arm-ble\` | PlatformIO 6.1.19 (pip) |
+| 上位机开发 | `D:\Dev\arm-ble-gui\` | Qt 6.11.0 + CMake + MSVC 2022 |
+| GitHub (固件) | https://github.com/suancaiyu10108899/arm-ble-firmware | ✅ |
+| GitHub (上位机) | https://github.com/suancaiyu10108899/arm-ble-gui | ✅ |
 
 > PlatformIO 命令入口：`python -m platformio run --project-dir=d:\Dev\arm-ble --target upload`
 
@@ -76,7 +77,7 @@ d:\假肢机械臂\
 ├── 02_电子与控制/
 │   ├── 系统架构说明.md           ← 电控全貌（已更新）
 │   ├── 元器件采购清单.md         ← 已购+待购
-│   ├── 电池模块/Arduino蓝牙板/   ← 空（待放实物照片）
+│   ├── 电池模块/Arduino蓝牙板/   ← 板子中文说明已归档
 │   ├── 电池模块/电压转换板/      ← 纯硬件
 │   ├── 机械臂控制板/             ← STM32（待填）
 │   ├── 无线调试器_塔克DAP/       ← DAP手册已归档
@@ -84,11 +85,12 @@ d:\假肢机械臂\
 ├── 03_嵌入式代码/
 │   └── 原版机械臂_Arduino/
 │       └── sketch_feb3a.ino       # 原固件存档
-├── 04_上位机/、05_实验数据/
+├── 04_上位机/
+│   └── README.md                 ← arm-ble-gui 项目说明 (含 Qt Connectivity 改名记录)
 ├── 06_文献与参考资料/
 │   ├── 塔克_DAP调试器手册_V2.0.pdf
 │   └── 其他PDF参考资料
-├── 07_学习笔记/                  # 3篇已完成
+├── 07_学习笔记/                  # 6篇
 ├── 08_周报与汇报/
 ├── 09_项目管理/                  # README / AI_MEMORY / 任务看板 / 问题追踪
 └── .gitignore
@@ -102,7 +104,7 @@ d:\假肢机械臂\
    - 老师/他人发来的文件：保留原名
    - 版本号：加 `_V2`、`_V3` 后缀
 3. **打印材料**：未来工场8200pro树脂（光固化）+ 尼龙件
-4. **开发代码与文档分离**：代码在 `D:\Dev\arm-ble\`（纯英文路径），文档在 `d:\假肢机械臂\`
+4. **开发代码与文档分离**：代码在 `D:\Dev\arm-ble\` 和 `D:\Dev\arm-ble-gui\`（纯英文路径），文档在 `d:\假肢机械臂\`
 5. **Git 只追踪文档和代码，不追踪大文件**
 
 ## 5. 现有文件清单
@@ -121,8 +123,9 @@ d:\假肢机械臂\
 | 电子 | 系统架构说明 + 元器件采购清单 | 文档 |
 | 电子 | 塔克 DAP 手册 | PDF |
 | 嵌入式 | sketch_feb3a.ino（固件存档） | Arduino |
-| 开发环境 | `D:\Dev\arm-ble\` PlatformIO 项目 | 可编译 |
-| 学习笔记 | 3篇（BLE/滤波/传感器） + 开发日志1篇 | 文档 |
+| 固件开发 | `D:\Dev\arm-ble\` PlatformIO 项目 | 可编译 |
+| 上位机 | `D:\Dev\arm-ble-gui\` Qt6 项目 | ✅ 编译+测试通过 |
+| 学习笔记 | 6篇（BLE/滤波/传感器/3D打印/Qt BLE/Windows BLE） | 文档 |
 
 ## 6. 技术栈
 
@@ -131,12 +134,12 @@ d:\假肢机械臂\
 | 机械设计 | SolidWorks | ✅ 已有 |
 | 3D打印材料 | 未来8200pro树脂 + 尼龙 | 待打印 |
 | PCB设计 | Altium Designer (cybathlon) | ✅ 已有 |
-| 嵌入式-BLE | PlatformIO + nRF52840 (Adafruit Feather) | ✅ BLE 双向验证通过 (nRF Connect ↔ 板子 ↔ 串口) |
+| 嵌入式-BLE | PlatformIO + nRF52840 (Adafruit Feather) | ✅ BLE 双向验证通过 |
 | 嵌入式-主控 | STM32U575 (ARM Cortex-M33) | ❓ 源码缺失 |
 | 传感器-角度 | Bend Labs 弯曲传感器 (BLE, ±250°) | ✅ 固件已有 |
 | 传感器-生物 | EMG 双通道肌电信号 | ⚠️ PCB预留 |
 | 无线调试 | 塔克 DAP (ESP32-S3, 30m, SWD/JTAG) | ✅ 手册已归档 |
-| 上位机 | - | 待开始 |
+| 上位机 | Qt 6.11 + C++17 + CMake | ✅ arm-ble-gui 骨架完成 |
 
 ## 7. 关键决策记录
 
@@ -149,6 +152,9 @@ d:\假肢机械臂\
 | 2026-06-11 | 确认板型：Adafruit Feather nRF52840 Express | 实物丝印确认 |
 | 2026-06-11 | 代码在 D:\Dev\arm-ble\（纯英文）| 避免中文路径编译问题 |
 | 2026-06-11 | PlatformIO 6.1.19 通过 pip 安装 | VSCode插件CLI破损 |
+| 2026-06-12 | 上位机用 Qt Widgets (非 QML) | 与 MindPath 技能栈一致 |
+| 2026-06-12 | 上位机独立仓库 arm-ble-gui | 与固件/文档分离管理 |
+| 2026-06-12 | Qt 6.8+ Bluetooth 改名为 Connectivity | Maintenance Tool 中勾选 Connectivity |
 
 ## 8. 老师发的电控元件
 
@@ -162,6 +168,7 @@ d:\假肢机械臂\
 ## 9. 待解决问题
 
 - 🔴 **遥控器协议**：明天下午学长给第一个遥控器，需找淘宝商家要技术手册
+- 🔴 **③号板通信接口**：UART/SPI/I2C协议、引脚、波特率未知
 - 另一只手的具体身份？
 - 剧组具体的改造需求？
 - STM32U575 固件源码在哪里？
@@ -175,9 +182,12 @@ d:\假肢机械臂\
 | 笔记1 | `07_学习笔记/嵌入式开发/nRF52_BLE传感器与舵机控制_20260610.md` | BLE通信、舵机映射、标定协议 |
 | 笔记2 | `07_学习笔记/控制算法/IIR滤波与死区滤波_20260610.md` | IIR低通(20Hz)、死区(0.5°) |
 | 笔记3 | `07_学习笔记/传感器与信号处理/BendLabs弯曲传感器与EMG肌电控制_20260610.md` | 传感器原理、融合方案 |
-| 笔记4 | `07_学习笔记/机械设计/3D打印工艺与实操积累_20260611.md` | 光固化vs SLS尼龙、螺丝收纳、MicroUSB选线、扫描STL处理 |
+| 笔记4 | `07_学习笔记/机械设计/3D打印工艺与实操积累_20260611.md` | 光固化vs SLS尼龙、螺丝收纳、MicroUSB选线 |
+| 笔记5 | `07_学习笔记/嵌入式开发/Qt_BLE上位机开发与编译_20260612.md` | Qt 6.11 BLE 桌面应用、CMake构建、兼容性踩坑 |
+| 笔记6 | `07_学习笔记/嵌入式开发/Windows_BLE蓝牙调试流程_20260612.md` | BLE扫描/连接/服务发现三层模型、NUS UUID验证 |
 | 日志1 | `D:\Dev\arm-ble\docs\devlog\2026-06-11_环境搭建.md` | 开发环境搭建纪要 |
 | 日志2 | `D:\Dev\arm-ble\docs\devlog\2026-06-11_BLE验证.md` | BLE双向通信验证全流程 |
+| 日志3 | `D:\Dev\arm-ble-gui\docs\devlog\2026-06-12_项目初始化.md` | arm-ble-gui 项目初始化 + Qt 6.11 兼容性 |
 
 ---
 
