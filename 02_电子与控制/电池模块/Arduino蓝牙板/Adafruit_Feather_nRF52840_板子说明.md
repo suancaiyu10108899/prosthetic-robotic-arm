@@ -1,7 +1,7 @@
 # Adafruit Feather nRF52840 Express — 板子说明（中文简版）
 
-> **来源**：Adafruit 官方文档 + 平台定义 + 本项目的固件分析
-> **整理日期**：2026-06-11
+> **来源**：Adafruit 官方 BSP (`variant.h` + `variant.cpp`) + 本项目固件
+> **整理日期**：2026-06-14（引脚已与 Adafruit 官方 BSP 核对）
 > **板子全名**：Adafruit Feather nRF52840 Express
 > **核心芯片**：Nordic nRF52840 (ARM Cortex-M4F @ 64MHz, 1MB Flash, 256KB RAM)
 > **官方链接**：https://learn.adafruit.com/adafruit-feather-nrf52840-express
@@ -33,23 +33,37 @@
 
 > ⚠️ **重要**：nRF52840 工作在 3.3V。所有 IO 引脚**只能接受 3.3V**，用 5V 信号会烧毁芯片。
 
-## 三、常用引脚 （本项目相关）
+## 三、常用引脚（与 Adafruit 官方 BSP 核对）
 
-| Arduino 编号 | nRF52 端口 | 功能 | 本项目用途 |
-|:-----------:|:----------:|------|-----------|
-| `LED_BUILTIN` (13) | P1.15 | 红色板载 LED | Blink 测试用 |
-| `A2` | P0.04 | 模拟/数字 IO | `sketch_feb3a.ino` 接舵机信号线 |
-| `A0` ~ `A5` | 多个模拟通道 | 模拟读数 / 通用 IO | — |
-| `SCL` | P0.11 | I2C 时钟线 | 可接传感器 |
-| `SDA` | P0.12 | I2C 数据线 | 可接传感器 |
-| `TX` | P0.25 | UART 发 | 有线通信到 ③ 号板 |
-| `RX` | P0.24 | UART 收 | 有线通信到 ③ 号板 |
-| `SCK` | P1.13 | SPI 时钟 | — |
-| `MO` | P1.14 | SPI 主机出从机入 | — |
-| `MI` | P1.11 | SPI 主机入从机出 | — |
-| `NEOPIXEL` (8) | P1.09 | 板载 RGB 彩色 LED | 状态指示 (可选) |
+| 功能 | 板上丝印 | Arduino 编号 | Nordic GPIO | 本项目用途 |
+|------|:---:|:---:|------|------|
+| UART TX | `TX` | D0 | **P0.25** | 有线通信到③号板 |
+| UART RX | `RX` | D1 | **P0.24** | 有线通信到③号板 |
+| LED | `D13` | 13 | P1.09 | Blink 测试用 |
+| 红色 LED | — | 3 | P1.15 | 板载红色 LED |
+| 蓝色 LED | — | 4 | P1.10 | 板载蓝色 LED |
+| NeoPixel | `D8` | 8 | P0.16 | 板载 RGB LED |
+| A0 | `A0` | 14 | P0.04 | 模拟输入 |
+| A1 | `A1` | 15 | P0.05 | 模拟输入 |
+| **A2** | `A2` | 16 | **P0.30** | **当前舵机信号线** |
+| A3 | `A3` | 17 | P0.28 | 模拟输入 |
+| A4 | `A4` | 18 | P0.02 | 模拟输入 |
+| A5 | `A5` | 19 | P0.03 | 模拟输入 |
+| I2C SCL | `SCL` | 23 | P0.11 | I2C 时钟线 |
+| I2C SDA | `SDA` | 22 | P0.12 | I2C 数据线 |
+| SPI SCK | `SCK` | 26 | P0.14 | SPI 时钟 |
+| SPI MOSI | `MO` | 25 | P0.13 | SPI 主机出从机入 |
+| SPI MISO | `MI` | 24 | P0.15 | SPI 主机入从机出 |
+| 用户按键 | `D7` | 7 | P1.02 | 板载按钮 |
 
-> **板载 LED 说明**：红色 LED 连在 pin 13；RGB LED（NeoPixel）连在 pin 8，可通过 `Adafruit_NeoPixel` 库控制颜色。
+### 两个串口
+
+| 串口对象 | 对应引脚 | 说明 |
+|---------|---------|------|
+| `Serial` | USB 虚拟串口 | 通过 MicroUSB 连电脑，不占用 D0/D1 |
+| `Serial1` | D0(RX)=P0.24, D1(TX)=P0.25 | 硬件 UART，用于连接外部模块 |
+
+> 引脚映射来源：`variants/feather_nrf52840_express/variant.cpp` 中的 `g_ADigitalPinMap` 数组（Adafruit 官方 BSP）。
 
 ## 四、实物连接步骤
 
@@ -103,8 +117,6 @@ python -m platformio device monitor --project-dir=d:\Dev\arm-ble
 | ⚠️ 烧录失败 | 双击板子 Reset 按钮进入 Bootloader 模式再试 |
 | BLE 天线 | 板载陶瓷天线，方向性不强但不要用手遮挡 |
 | 电池 | 如果需要电池供电，接 3.7V Li-Po 到板子背面 JST 口 |
+| UART 接线 | TX(板) → RX(对方), GND(板) → GND(对方)，交叉接线 |
 
 ---
-
-> 📌 **补充参考**：完整引脚图、电路原理图请访问 Adafruit 官方页面。
-> 同时建议归档一份板子实物照片到 `02_电子与控制/电池模块/Arduino蓝牙板/` 下。
