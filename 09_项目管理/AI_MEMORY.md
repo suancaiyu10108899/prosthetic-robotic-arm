@@ -2,7 +2,7 @@
 
 > **用途**：本文件帮助 AI 助手在每次对话中快速了解项目全貌，实现持续跟进。
 > **维护规则**：每次与 AI 协作完成重要工作后，更新本文件对应的部分。
-> **最后更新**：2026-06-13
+> **最后更新**：2026-06-13 17:48
 
 ---
 
@@ -16,7 +16,7 @@
 | **负责人** | (你的名字 / 年级：大二下) |
 | **实验室** | (实验室名称) |
 | **开始时间** | 2026年6月 |
-| **当前阶段** | 🔧 VR LOOKBON 手柄调试中 — Bluefruit.begin 参数顺序坑已定位，并行 PC Qt 桥接方案 |
+| **当前阶段** | 🔧 VR LOOKBON 手柄调试 — 纯Central扫描器 count=1 bug确认，v1.4 双角色 `begin(1,1)` 待烧录测试 |
 
 ## 2. 当前任务背景
 
@@ -94,11 +94,20 @@ d:\假肢机械臂\
 3. **打印材料**：未来工场8200pro树脂（光固化）+ 尼龙件
 4. **代码与文档分离**：代码在 `D:\Dev\arm-ble\` 和 `D:\Dev\arm-ble-gui\`（纯英文），文档在 `d:\假肢机械臂\`
 
-## 5. 🔴 关键技术发现（2026-06-13）
+## 5. 🔴 关键技术发现（2026-06-13 下午更新）
 
 ### Bluefruit.begin 参数顺序坑
 
-`Bluefruit.begin(peripheralCount, centralCount)` — **第一个参数是 Peripheral，第二个才是 Central**。v0.2-v0.8 全部写反了 `begin(1,0)` = 1 Peripheral + 0 Central（扫描器从未以 Central 角色启动）。v1.0 修正为 `begin(0,1)` + `start(10000)` + `setStopCallback` 循环扫描。
+`Bluefruit.begin(peripheralCount, centralCount)` — **第一个参数是 Peripheral，第二个才是 Central**。v0.2-v0.8 全部写反了 `begin(1,0)` = 1 Peripheral + 0 Central（扫描器从未以 Central 角色启动）。
+
+### 纯 Central 模式扫描器 bug（v1.3 证实）
+
+`begin(0,1)` 纯 Central 模式下，`onScan` 回调**只触发一次就永久休眠**：
+- v1.0: `start(10000)` + `setStopCallback` → count=1 卡死
+- v1.1: `start(0)` 无限扫描 → 同样 count=1
+- v1.3: 全量日志证实只扫到一台陌生电脑 `48:05:E2:0F:60:ED`，onScan 不再触发
+- v1.2: 跳过扫描器 MAC直连 → `Central.connect()` busy/failed（库需要广播缓存）
+- **v1.4**: `begin(1,1)` 双角色 — 正在验证中
 
 ### 手柄连接现状
 
@@ -106,8 +115,10 @@ d:\假肢机械臂\
 |------|------|
 | 手机 (nRF Connect) | ✅ 扫描 + 连接 + 收 Notify (A1-A7, D1-D8) |
 | PC (Windows 蓝牙) | ✅ 扫描到 57 个设备（含 LOOKBON） |
-| nRF52840 Central (v1.0) | ⚠️ 扫描回调 `count=1` 卡住，`setStopCallback` 不触发 |
-| PC (Qt LookbonReceiver) | ⚠️ GAP OK，`connectToDevice` → `connected` 正常，服务发现待完成 |
+| nRF52840 begin(0,1) 纯Central | ❌ onScan 只触发一次后永久休眠 (v1.0-v1.3) |
+| nRF52840 MAC 直连 | ❌ Central.connect() busy/failed (v1.2) |
+| nRF52840 begin(1,1) 双角色 | 🔬 v1.4 待烧录测试 |
+| PC (Qt LookbonReceiver) | ⚠️ GAP OK，服务发现待完成 |
 
 ### arm-ble-gui 新增 LOOKBON 直连
 
@@ -115,7 +126,7 @@ d:\假肢机械臂\
 
 ## 6. 待解决问题
 
-- 🔴 **nRF52840 扫描 `count=1` 卡住**：`start(10000)` + `setStopCallback` 组合下扫描循环仍不工作
+- 🔴 **nRF52840 扫描器 bug**：v1.3 全量日志证实纯Central下 onScan 只触发一次 → v1.4 双角色 `begin(1,1)` 待烧录
 - 🔴 **Qt LookbonReceiver 服务发现**：`discoverServices` 后 AE30 匹配需验证
 - 🔴 **③号板通信接口**：UART/SPI/I2C协议、引脚、波特率未知（在学长处）
 - 🟡 **CodexPad-C10 手柄**：待到手，协议已分析完毕
@@ -132,6 +143,10 @@ d:\假肢机械臂\
 | v0.7 | `(0,1)` ✅ | 纯 NUS Peripheral | 等 GUI 数据 |
 | v0.8 | `(1,0)` ❌ | scan+report 连接 | 无扫描回调 |
 | v1.0 | `(0,1)` ✅ | 纯主机 + start(10000) | `count=1` 仍卡住 |
+| v1.1 | `(0,1)` ✅ | start(0) 无限扫描 | `count=1` 卡死 (17:34) |
+| v1.2 | `(0,1)` ✅ | 跳过扫描器 MAC直连 | `Central.connect()` busy/failed |
+| v1.3 | `(0,1)` ✅ | 全量日志诊断 | 仅扫到陌生电脑, onScan永久停 |
+| v1.4 | `(1,1)` 🔬 | 双角色 + 全量日志 | 待烧录测试 |
 
 ## 8. 学习笔记索引
 
@@ -148,4 +163,4 @@ d:\假肢机械臂\
 | 日志1 | `D:\Dev\arm-ble\docs\devlog\2026-06-11_环境搭建.md` | 环境搭建 |
 | 日志2 | `D:\Dev\arm-ble\docs\devlog\2026-06-11_BLE验证.md` | BLE双向验证 |
 | 日志3 | `D:\Dev\arm-ble-gui\docs\devlog\2026-06-12_项目初始化.md` | GUI初始化 |
-| 日志4 | `D:\Dev\arm-ble\docs\devlog\2026-06-13_手柄调试图鉴.md` | 手柄8版调试 |
+| 日志4 | `D:\Dev\arm-ble\docs\devlog\2026-06-13_手柄调试图鉴.md` | 手柄调试 (v0.2-v1.4, 11版) |
