@@ -2,7 +2,7 @@
 
 > **用途**：本文件帮助 AI 助手在每次对话中快速了解项目全貌，实现持续跟进。
 > **维护规则**：每次与 AI 协作完成重要工作后，更新本文件对应的部分。
-> **最后更新**：2026-06-13 17:48
+> **最后更新**：2026-06-13 19:18
 
 ---
 
@@ -16,14 +16,13 @@
 | **负责人** | (你的名字 / 年级：大二下) |
 | **实验室** | (实验室名称) |
 | **开始时间** | 2026年6月 |
-| **当前阶段** | 🔧 VR LOOKBON 手柄调试 — 纯Central扫描器 count=1 bug确认，v1.4 双角色 `begin(1,1)` 待烧录测试 |
+| **当前阶段** | ✅ VR LOOKBON 手柄调试完成 — 扫描/GAP/CCCD/Notify/解析 全链路打通 |
 
 ## 2. 当前任务背景
 
 - 老师原有机械臂被**剧组借用改造**
 - 需要用**未来工场8200pro树脂**做光固化打印
 - 同时有一**另一只手**（合作方设计）的零件也要打印
-- 另一只手包含：接受腔、尼龙件（左盖/把/箍/连杆/销）、树脂件（E-1/E-2）
 
 ### 电控系统架构（已确认）
 
@@ -32,7 +31,7 @@
     │ BLE
     ▼
 ┌─ 电池模块 (电池箱) ────────────────┐
-│  ① Adafruit Feather nRF52840 Express   │  ← 🔴 当前任务：手柄 BLE 连接
+│  ① Adafruit Feather nRF52840 Express   │  ← ✅ 手柄 BLE 连接全通
 │     (nRF52840, MicroUSB 供电+编程)     │
 │  ② 电压转换板                         │  ← 纯硬件，无需编程
 └──────────┬──────────────────────────┘
@@ -94,59 +93,56 @@ d:\假肢机械臂\
 3. **打印材料**：未来工场8200pro树脂（光固化）+ 尼龙件
 4. **代码与文档分离**：代码在 `D:\Dev\arm-ble\` 和 `D:\Dev\arm-ble-gui\`（纯英文），文档在 `d:\假肢机械臂\`
 
-## 5. 🔴 关键技术发现（2026-06-13 下午更新）
+## 5. 🔴 关键技术发现（2026-06-13）
 
 ### Bluefruit.begin 参数顺序坑
 
-`Bluefruit.begin(peripheralCount, centralCount)` — **第一个参数是 Peripheral，第二个才是 Central**。v0.2-v0.8 全部写反了 `begin(1,0)` = 1 Peripheral + 0 Central（扫描器从未以 Central 角色启动）。
+`Bluefruit.begin(peripheralCount, centralCount)` — **第一个参数是 Peripheral，第二个才是 Central**。
 
-### 纯 Central 模式扫描器 bug（v1.3 证实）
+### 纯 Central 模式扫描器 bug
 
-`begin(0,1)` 纯 Central 模式下，`onScan` 回调**只触发一次就永久休眠**：
-- v1.0: `start(10000)` + `setStopCallback` → count=1 卡死
-- v1.1: `start(0)` 无限扫描 → 同样 count=1
-- v1.3: 全量日志证实只扫到一台陌生电脑 `48:05:E2:0F:60:ED`，onScan 不再触发
-- v1.2: 跳过扫描器 MAC直连 → `Central.connect()` busy/failed（库需要广播缓存）
-- **v1.4**: `begin(1,1)` 双角色 — 正在验证中
+`begin(0,1)` 纯 Central 模式下，`onScan` 回调只触发一次后永久休眠 → 通过 `begin(1,1)` + loop 重启绕过。
+
+### GATT 发现不兼容
+
+Adafruit 库 `BLEClientService::discover()` 与 LOOKBON 不兼容 → 参照 Python `ble_python.py` 跳过 discover，直接 `sd_ble_gattc_write` 写 CCCD。
+
+### SoftDevice 中断上下文阻塞
+
+`onConnect` 回调在 SoftDevice 中断上下文中执行，`delay(2000)` 阻塞事件处理导致手柄超时断连 → 将 CCCD 写入移到 loop 中温和执行。
+
+### LOOKBON 协议：单字节编码
+
+高 nibble = 事件类型 (0xA=单击/0xB=长按/0xC=释放/0xD=方向)，低 nibble = 按键/方向编号。
 
 ### 手柄连接现状
 
-| 设备 | 能力 |
-|------|------|
-| 手机 (nRF Connect) | ✅ 扫描 + 连接 + 收 Notify (A1-A7, D1-D8) |
-| PC (Windows 蓝牙) | ✅ 扫描到 57 个设备（含 LOOKBON） |
-| nRF52840 begin(0,1) 纯Central | ❌ onScan 只触发一次后永久休眠 (v1.0-v1.3) |
-| nRF52840 MAC 直连 | ❌ Central.connect() busy/failed (v1.2) |
-| nRF52840 begin(1,1) 双角色 | 🔬 v1.4 待烧录测试 |
-| PC (Qt LookbonReceiver) | ⚠️ GAP OK，服务发现待完成 |
-
-### arm-ble-gui 新增 LOOKBON 直连
-
-`ble/LookbonReceiver.h/cpp` — GAP 层连接已验证通过（3 分钟持续）。`connectToDevice("0D:CE:99:03:5D:D2")` → `connected` 信号触发，手动关机正常断连。Qt 6.11 128-bit UUID (AE30/AE02) 服务发现待调试。
+| 层 | 状态 | 版本 |
+|----|:---:|:---:|
+| 扫描 LOOKBON | ✅ | v1.5 |
+| GAP 连接 | ✅ | v1.5 |
+| CCCD 写入 | ✅ | v1.9 |
+| Notify 数据接收 | ✅ | v2.4 |
+| 协议解析 (BTN/X/Y) | ✅ | v2.6 |
+| 连接后停扫描 | ✅ | v2.5 |
 
 ## 6. 待解决问题
 
-- 🔴 **nRF52840 扫描器 bug**：v1.3 全量日志证实纯Central下 onScan 只触发一次 → v1.4 双角色 `begin(1,1)` 待烧录
-- 🔴 **Qt LookbonReceiver 服务发现**：`discoverServices` 后 AE30 匹配需验证
 - 🔴 **③号板通信接口**：UART/SPI/I2C协议、引脚、波特率未知（在学长处）
 - 🟡 **CodexPad-C10 手柄**：待到手，协议已分析完毕
+- 🟡 **舵机控制验证**：BTN/X/Y 映射到舵机需要实测
 
 ## 7. 固件版本历程
 
-| 版本 | begin 参数 | 策略 | 结果 |
-|:---:|------|------|------|
-| v0.2 | `(1,1)` | 双角色 + 扫广播名 | 扫到 1 台路过电脑 |
-| v0.3 | `(1,1)` | 去 UUID 过滤 + Active Scan | 同上 |
-| v0.4 | `(1,0)` ❌ | 纯 Central + 无过滤 | `count=1` 卡住 |
-| v0.5 | `(1,0)` ❌ | MAC 直连 + delay | Central busy 循环 |
-| v0.6 | `(1,0)` ❌ | 异步 MAC 直连 | Central busy 循环 |
-| v0.7 | `(0,1)` ✅ | 纯 NUS Peripheral | 等 GUI 数据 |
-| v0.8 | `(1,0)` ❌ | scan+report 连接 | 无扫描回调 |
-| v1.0 | `(0,1)` ✅ | 纯主机 + start(10000) | `count=1` 仍卡住 |
-| v1.1 | `(0,1)` ✅ | start(0) 无限扫描 | `count=1` 卡死 (17:34) |
-| v1.2 | `(0,1)` ✅ | 跳过扫描器 MAC直连 | `Central.connect()` busy/failed |
-| v1.3 | `(0,1)` ✅ | 全量日志诊断 | 仅扫到陌生电脑, onScan永久停 |
-| v1.4 | `(1,1)` 🔬 | 双角色 + 全量日志 | 待烧录测试 |
+| 版本 | 策略 | 结果 |
+|:---:|------|------|
+| v1.5 | 被动扫描 + loop 10s 重启 | ✅ 扫到 LOOKBON |
+| v1.6-v1.8 | GATT discover | ❌ 不兼容 |
+| v1.9 | 跳过 discover 直写 CCCD | ✅ CCCD OK |
+| v2.0-v2.3 | 事件回调 + 全量日志诊断 | 发现 onConnect 阻塞 |
+| **v2.4** | **loop 温和 CCCD** | **✅ 数据通道打通** |
+| v2.5 | 连接后停扫描 | ✅ |
+| **v2.6** | **单字节解析器** | **✅ BTN/X/Y 全部正确** |
 
 ## 8. 学习笔记索引
 
@@ -163,4 +159,4 @@ d:\假肢机械臂\
 | 日志1 | `D:\Dev\arm-ble\docs\devlog\2026-06-11_环境搭建.md` | 环境搭建 |
 | 日志2 | `D:\Dev\arm-ble\docs\devlog\2026-06-11_BLE验证.md` | BLE双向验证 |
 | 日志3 | `D:\Dev\arm-ble-gui\docs\devlog\2026-06-12_项目初始化.md` | GUI初始化 |
-| 日志4 | `D:\Dev\arm-ble\docs\devlog\2026-06-13_手柄调试图鉴.md` | 手柄调试 (v0.2-v1.4, 11版) |
+| 日志4 | `D:\Dev\arm-ble\docs\devlog\2026-06-13_手柄调试图鉴.md` | 手柄调试 (v1.0-v2.6 完整) |
