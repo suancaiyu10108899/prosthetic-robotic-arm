@@ -15,7 +15,7 @@
 | **GitHub** | `prosthetic-robotic-arm` |
 | **负责人** | (你的名字 / 年级：大二下) |
 | **开始时间** | 2026年6月 |
-| **当前阶段** | ✅ ESP32 BLE+UART 全链路打通 (v6-final) | ❌ nRF52840 板1 报废 (12V 事故) | 🟡 盒子待定 |
+| **当前阶段** | ✅ ESP32-S3 BLE+UART 全链路打通 (v1-final) | ✅ 示波器验证通过 | 🟡 等杜邦线接③号板 |
 
 ## 2. 当前任务背景
 
@@ -30,18 +30,20 @@
     ▼
 ┌─ 电池模块 (电池箱) ────────────────┐
 │  ① BLE→UART 桥                      │
-│     ✅ nRF52840 v2.9-final (板1 报废) │
-│     ✅ ESP32 v6-final (替补, 可用)    │
+│     ❌ nRF52840 v2.9-final (板1 报废) │
+│     ❌ ESP32 WROOM v6-final (板2 发热报废) │
+│     ✅ ESP32-S3 v1-final (当前交付板)  │
 │  ② 电压转换板                         │
 └──────────┬──────────────────────────┘
-           │ UART TX (D17=GPIO17, 115200, 3.3V)
+           │ UART TX (GPIO17, 115200, 3.3V)
 ┌─ 机械臂控制板 ──────────────────────┐
 │  ③ STM32/cybathlon   ← 发PWM        │
 └────────────────────────────────────┘
 ```
 
 - **板① nRF52840**：Adafruit Feather nRF52840 Express（MAC: D3:52:88:3A:06:27）— **板1 12V 事故报废**
-- **板① 替补 ESP32**：ESP32-WROOM-32 DevKit（MAC: 48:e7:29:a0:02:20）— **v6-final 验证通过**
+- **板① 替补 ESP32**：ESP32-WROOM-32 DevKit（MAC: 48:e7:29:a0:02:20）— v6-final 验证通过后发热报废
+- **板① 替补 ESP32-S3**：ESP32-S3-DevKitC-1 v1.1（MAC: e8:f6:0a:a7:2b:14）— **v1-final 当前交付板 ✅**
 - **板②**：电压转换，纯硬件
 - **板③**：STM32，在学长处
 
@@ -50,9 +52,9 @@
 | 项目 | 路径 | 工具 |
 |------|------|------|
 | 文档管理仓库 | `d:\假肢机械臂\` | Git + GitHub |
-| nRF52 固件 | `D:\Dev\arm-ble\` | PlatformIO (nordicnrf52 + Arduino) |
-| ESP32 固件 | `D:\Dev\arm-ble-esp32\` | PlatformIO (espressif32 + Arduino) |
-| GitHub (固件) | https://github.com/suancaiyu10108899/arm-ble-firmware | ✅ |
+| nRF52 固件 | `D:\Dev\arm-ble\` | PlatformIO (nordicnrf52) |
+| ESP32 固件 (第2块, 发热报废) | `D:\Dev\arm-ble-esp32\` | PlatformIO (espressif32) |
+| **ESP32-S3 固件 (当前交付)** | **`D:\Dev\arm-ble-s3\`** | **PlatformIO (espressif32)** |
 
 > PlatformIO 命令入口：`python -m platformio run --project-dir=<path> --target upload`
 
