@@ -56,12 +56,13 @@
 
 ### 开发环境
 
-| 项目 | 路径 | 工具 |
-|------|------|------|
-| 文档管理仓库 | `d:\假肢机械臂\` | Git + GitHub |
-| nRF52 固件（当前主交付） | `D:\Dev\arm-ble\` | PlatformIO（nordicnrf52） |
-| ESP32-S3 固件（备用） | `D:\Dev\arm-ble-s3\` | PlatformIO（espressif32） |
-| ESP32 固件（已废板） | `D:\Dev\arm-ble-esp32\` | PlatformIO（espressif32） |
+| 项目 | 路径 | GitHub | 工具 |
+|------|------|------|------|
+| 文档管理仓库 | `d:\假肢机械臂\` | [prosthetic-robotic-arm](https://github.com/suancaiyu10108899/prosthetic-robotic-arm) | Git + GitHub |
+| nRF52 固件（当前主交付） | `D:\Dev\arm-ble\` | [arm-ble-firmware](https://github.com/suancaiyu10108899/arm-ble-firmware) | PlatformIO（nordicnrf52） |
+| ESP32-S3 固件（备用） | `D:\Dev\arm-ble-s3\` | [arm-ble-s3-firmware](https://github.com/suancaiyu10108899/arm-ble-s3-firmware) | PlatformIO（espressif32） |
+| 上位机 GUI | `D:\Dev\arm-ble-gui\` | [arm-ble-gui](https://github.com/suancaiyu10108899/arm-ble-gui) | Qt 6.11 + CMake + MSVC |
+| ESP32 固件（已废板） | `D:\Dev\arm-ble-esp32\` | —（本地存档） | PlatformIO（espressif32） |
 
 > PlatformIO 命令入口：`python -m platformio run --project-dir=<path> --target upload`
 
