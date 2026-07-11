@@ -1,0 +1,387 @@
+ cat python/touch_glove/demo.py
+ fg %1
+ killall nano
+ cat << 'EOF' > python/touch_glove/demo.py
+"""Installed demo entrypoint for touch-glove."""
+
+from __future__ import annotations
+
+import time
+
+from touch_glove.sdk import TouchGlove, list_ports
+
+
+def main() -> int:
+    ports = list_ports()
+    if not ports:
+        print("No serial ports found.")
+        return 1
+
+    port = ports[0]
+    print(f"Connecting to {port}...")
+
+    with TouchGlove(port) as glove:
+        glove.start()
+        print("Stream started. Calibrating in 2 seconds...")
+        time.sleep(2)
+        glove.calibrate()
+        print("提示: 使用1s内的平均力进行去皮，然后再启动输出。")
+        tare_sums = {}
+        tare_cnts = {}
+        tare_end = time.time() + 1.0
+        while time.time() < tare_end:
+            batch = glove.poll()
+            for frame in batch:
+                ch = int(frame.channel)
+                if ch not in tare_sums:
+                    tare_sums[ch] = [0.0, 0.0, 0.0]
+                    tare_cnts[ch] = 0
+                tare_sums[ch][0] += float(frame.fx)
+                tare_sums[ch][1] += float(frame.fy)
+                tare_sums[ch][2] += float(frame.fz)
+                tare_cnts[ch] += 1
+            time.sleep(0.002)
+
+        tare_offsets = {}
+        for ch, sums in tare_sums.items():
+            n = max(tare_cnts.get(ch, 0), 1)
+            tare_offsets[ch] = (sums[0] / n, sums[1] / n, sums[2] / n)
+
+        print("Calibrated! Press Ctrl+C to stop.")
+
+        try:
+            while True:
+                batch = glove.poll()
+                for frame in batch:
+                    ch = int(frame.channel)
+                    off = tare_offsets.get(ch, (0.0, 0.0, 0.0))
+                    fx = float(frame.fx) - off[0]
+                    fy = float(frame.fy) - off[1]
+                    fz = float(frame.fz) - off[2]
+                    print(
+                        f"CH {frame.channel} | "
+                        f"Force: ({fx:5.1f}, {fy:5.1f}, {fz:5.1f}) N | "
+                        f"Pos: ({frame.x:4.1f}, {frame.y:4.1f}) mm"
+                    )
+                time.sleep(0.02)
+        except KeyboardInterrupt:
+            print("Stopping...")
+            print("Exiting with block...", file=__import__('sys').stderr)
+    print("after with block...", file=__import__('sys').stderr)
+    return 0
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+EOF
+ kill -9 $(pidof nano)
+ ls -l /tmp > /dev/null
+ ls -l /dev/ttyACM0
+ killall get_force_data.py || echo "not running"
+ grep -A 10 "pub fn open(" src/python/py_glove.rs
+ reset
+ cat src/python/py_glove.rs | grep '\[TouchGlove.open\]' -B 5 -A 5
+ cat python/touch_glove_rust/compat.py
+ grep -A 20 "pub fn send_command" src/context.rs
+ cat src/context.rs | grep -n "pub fn send_command"
+ killall -9 nano
+ echo "Checking TTY status" && python3.12 -c 'import serial; s=serial.Serial("/dev/ttyACM0"); print("OK")'
+ python3.12 -c "import serial; print(serial.Serial('/dev/ttyACM0').is_open)"
+ fuser -v /dev/ttyACM0 || true
+ ps -ef | grep -E 'ModemManager|brltty|screen|minicom|python.*get_force_data|python.*touch_glove' | grep -v grep || true
+ python - <<'PY'
+import time, serial
+p='/dev/ttyACM0'
+for i in range(5):
+    try:
+        s=serial.Serial(p,115200,timeout=0)
+        print(i,'open ok',s.is_open)
+        s.close()
+        print(i,'close ok')
+    except Exception as e:
+        print(i,'open fail',repr(e))
+    time.sleep(0.3)
+PY
+ set -e
+echo '--- fuser ---'
+fuser -v /dev/ttyACM0 || true
+echo '--- ps ---'
+ps -ef | grep -E 'ModemManager|brltty|screen|minicom|get_force_data|touch_glove' | grep -v grep || true
+echo '--- pyserial quick test ---'
+python - <<'PY'
+import time, serial
+p='/dev/ttyACM0'
+for i in range(5):
+    try:
+        s=serial.Serial(p,115200,timeout=0)
+        print(i,'open ok',s.is_open)
+        s.close()
+        print(i,'close ok')
+    except Exception as e:
+        print(i,'open fail',repr(e))
+    time.sleep(0.2)
+PY
+ echo hello && whoami && pwd
+ /home/robot/miniconda3/envs/py312/bin/maturin develop --features python
+ chmod +x scripts/install_udev_rules.sh && ls -l scripts/install_udev_rules.sh
+ chmod 755 scripts/install_udev_rules.sh
+ cargo build --features python
+ TERM=dumb cargo build --features python 2>&1 | tail -n 50
+ /home/robot/miniconda3/envs/py312/bin/maturin develop --features python
+ /home/robot/miniconda3/envs/py312/bin/maturin develop --features python --quiet
+ /home/robot/miniconda3/envs/py312/bin/maturin develop --features python --quiet
+ /home/robot/miniconda3/envs/py312/bin/maturin develop --features python > /tmp/tg_maturin.log 2>&1; echo $? > /tmp/tg_maturin.rc
+ echo test > /tmp/tg_test_file && cat /tmp/tg_test_file
+ cat src/context.rs | grep -n "impl Context" -A 100
+ cat src/context.rs
+ cat src/python/py_glove.rs | grep -n "impl PyTouchGlove" -A 100
+ cat python/touch_glove_rust/compat.py
+ cat src/serial_io.rs
+ cat src/python/py_glove.rs | grep -n "wait_until_ready" -A 10
+ cat src/python/py_glove.rs | grep -A 20 "fn wait_until_ready"
+ nl src/python/py_glove.rs | grep "wait_until_ready"
+ cat python/touch_glove/demo.py | grep "设备初始化超时" -B 2 -A 2
+ cargo check
+ cargo build
+ bash -c "source ~/.bashrc && conda activate py312 && maturin develop --release"
+ bash -c "source ~/.bashrc && conda activate py312 && maturin develop --release > build.log 2>&1 && python ./scripts/get_force_data.py > run.log 2>&1"
+ cat build.log
+ python -c "
+import serial
+import time
+port = serial.Serial('/dev/ttyACM0', 115200, timeout=0.1)
+port.write(bytes([0x55, 0xAA, 0x01, 1, 0x04, 0, 0, 0, 0])) # TYPE_HOST_DEV, CMD_STREAM_STOP
+time.sleep(0.5)
+port.reset_input_buffer()
+port.write(bytes([0x55, 0xAA, 0x01, 1, 0x05, 0, 0, 0, 0])) # CMD_UNIQUE_ID
+print(port.read(100))
+"
+ python -c "
+import serial
+import time
+port = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+port.reset_input_buffer()
+port.write(bytes([0x55, 0xAA, 0x01, 1, 0x04, 0, 0, 0, 0])) # TYPE_HOST_DEV=0x01, wait wait, header is 55 AA 01 04 ... 
+" > test_out.txt 2>&1
+cat test_out.txt
+ cat src/parser.rs | grep build_frame -A 15
+ python -c "
+import serial
+import time
+port = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+port.write(bytes.fromhex('55AA0100000400')) # Need to check checksum logic
+"
+ /home/robot/miniconda3/envs/py312/bin/python ./scripts/get_force_data.py > run_debug.log 2>&1
+ cat run_debug.log
+ cat run_debug.log | head -n 40
+ ls -lh run_debug.log
+ cat > test_open.py << 'EOF'
+import sys
+import logging
+from touch_glove.sdk import TouchGlove
+
+glove = TouchGlove()
+glove._debug_logs_enabled = True
+print("Opened!", glove.is_open)
+glove.close()
+EOF
+RUST_LOG=debug /home/robot/miniconda3/envs/py312/bin/python test_open.py > test_open.log 2>&1
+cat test_open.log
+ cat open2.log
+ cat src/parser.rs | grep -A 30 "match self.state"
+ cat src/parser.rs | grep -A 40 "parse_body"
+ cat src/parser.rs | grep -A 20 "fn resync_buf"
+ cat src/ring_buffer.rs | grep "pub fn push" -A 10
+ cat src/ring_buffer.rs | grep "pub fn push" -A 10
+ cat src/context.rs | grep "pub fn parser"
+ cat src/context.rs | grep "pub fn" -A 2 -B 2
+ cat src/context.rs | grep -A 5 "pub fn set_state"
+ nl src/python/py_glove.rs | grep "py.allow_threads" -A 10
+ cat > test_serial_recovery.py << 'EOF'
+import serial
+import time
+import sys
+
+def test():
+    try:
+        p = serial.Serial('/dev/ttyACM0', 115200, timeout=0.1)
+    except Exception as e:
+        print("open error:", e)
+        return
+    
+    print("Opened port. Sending STOP x5")
+    for _ in range(5):
+        p.write(bytes([0x55, 0xAA, 0x01, 0x01, 0x04, 0x00, 0x04, 0xE4, 0xDF])) # this is just a dummy, let's see if we can use the exact frame
+        time.sleep(0.01)
+    
+    print("Draining...")
+    start = time.time()
+    while time.time() - start < 0.2:
+        p.read(1024)
+        
+    print("Sending UID request")
+    # TYPE_HOST_DEV=0x01, CMD=0x05 (CMD_UNIQUE_ID)
+    # len=2 (no param) -> wait, header is 0x55 0xAa
+    # addr = 1
+    # len = 2
+    # type = 1, cmd = 5
+    # cksum = sum % 256
+    # tail = 0xE4 0xDF
+    p.write(bytes([0x55, 0xAA, 0x01, 0x02, 0x00, 0x01, 0x05, 0x08, 0xE4, 0xDF])) # computed roughly
+    
+    start = time.time()
+    while time.time() - start < 1.0:
+        res = p.read(1024)
+        if res:
+            print("Got data:", res.hex())
+            if bytes([0x01, 0x05]) in res or bytes([0x02, 0x05]) in res:
+                print("Got UID ACK.")
+                return
+    print("Timeout.")
+
+test()
+EOF
+/home/robot/miniconda3/envs/py312/bin/python test_serial_recovery.py
+ cat src/python/py_glove.rs | grep -A 10 "fn stop_internal"
+ cat src/python/py_glove.rs | tail -n 15
+ cat src/python/py_glove.rs | grep stop_internal -B 5 -A 10
+ grep -A 5 "fn stop_internal" src/python/py_glove.rs
+ grep "fn close(" -A 5 src/context.rs
+ grep -n "fn send_command" src/context.rs -A 10
+ /home/robot/miniconda3/envs/py312/bin/python test_serial_recovery.py
+ cat python/touch_glove_rust/compat.py | grep -B 5 -A 20 "def open"
+ cat >> python/touch_glove_rust/compat.py << 'EOF'
+EOF
+ grep -n "fn close" src/python/py_glove.rs -A 10
+ grep -A 10 "fn __exit__" src/python/py_glove.rs
+ cat src/python/py_glove.rs | grep "fn stop_internal" -A 10
+ grep -B 2 -A 5 stop_internal src/python/py_glove.rs
+ cat src/python/py_glove.rs | grep stop_internal -B 5 -A 5
+ tail -n 20 src/python/py_glove.rs
+ cat src/python/py_glove.rs | grep stop_internal -B 5 -A 5
+ tail -n 30 src/python/py_glove.rs > tail.txt && cat tail.txt
+ cat tail.txt
+ tail -n 30 src/python/py_glove.rs > foo.txt
+ cat foo.txt
+ python3 -c "print(open('src/python/py_glove.rs').readlines()[-30:])"
+ cat foo.txt
+ cat foo2.txt
+ cat src/python/py_glove.rs | awk 'NR>=390 && NR<=410' > lines.txt
+ cat lines.txt
+ sed -i 's/let _ = self.ctx.send_get_unique_id();/println!("Requesting UID... attempt={}", _attempt); let _ = self.ctx.send_get_unique_id();/' src/python/py_glove.rs
+ cat src/serial_io.rs | grep bytes_to_read -A 10
+ sed -i 's/py.allow_threads/println!("poll_read tick"); py.allow_threads/g' src/python/py_glove.rs
+ git checkout src/python/py_glove.rs
+ cat src/python/py_glove.rs | grep "pub fn open" -A 100
+ git reset --hard
+ git pull
+ git status
+ cat src/python/py_glove.rs | grep "pub fn open" -A 60
+ cat st.txt
+ cat src/python/py_glove.rs | grep "fn open" -A 10
+ cat open.txt
+ python3 -c "print(open('src/python/py_glove.rs').read())" > rs.txt
+ cat src2.txt | grep -A 20 "pub fn open"
+ /home/robot/miniconda3/envs/py312/bin/pip install pyserial
+ cat README.md
+ cat README.md
+ cat README.md | grep -A 10 "获取力与位置数据"
+ cat README.md | grep -B 5 -A 10 "python ./scripts/get_force_data.py"
+ cat README.md | grep -A 5 "Troubleshooting"
+ conda run -n py312 maturin build --release -o ./target/wheels
+ bash -c "source ~/miniconda3/etc/profile.d/conda.sh && conda activate py312_touch_glove && maturin build --release -o ./target/wheels"
+ ls -lh ./target/wheels
+ mkdir -p customer_docker_package
+ chmod +x scripts/export_docker_package.sh && ./scripts/export_docker_package.sh
+ ls -lh dist_customer_docker
+ cat dist_customer_docker/run.sh
+ cat dist_customer_docker/Dockerfile
+ ./scripts/export_docker_package.sh
+ ./scripts/export_docker_package.sh
+ ls -lh dist_customer_docker
+ cat dist_customer_docker/README_安装运行.md
+ tail -n 15 scripts/export_docker_package.sh
+ cat scripts/get_force_data.py
+ cat scripts/get_force_data.py
+ ./scripts/export_docker_package.sh
+ cat src/python/py_glove.rs | grep -n -A 20 -B 20 "pub fn open"
+ cat src/python/py_glove.rs | grep -n -A 20 -B 20 "pub fn open" --no-pager
+ cat src/python/py_glove.rs
+ cat scripts/get_force_data.py
+ cat src/serial_io.rs
+ cat src/context.rs | grep -n -A 10 -B 10 "pub fn close"
+ cat src/context.rs | grep -n -A 20 -B 5 "pub fn poll_read"
+ maturin develop --release
+ bash -c "source ~/.bashrc && conda activate py312 && maturin develop --release > build.log 2>&1 && cat build.log"
+ ls -al > temp.log
+"""Installed demo entrypoint for touch-glove."""
+
+from __future__ import annotations
+
+import time
+
+from touch_glove.sdk import TouchGlove, list_ports
+
+
+def main() -> int:
+    ports = list_ports()
+    if not ports:
+        print("No serial ports found.")
+        return 1
+
+    port = ports[0]
+    print(f"Connecting to {port}...")
+
+    with TouchGlove(port) as glove:
+        glove.start()
+        print("Stream started. Calibrating in 2 seconds...")
+        time.sleep(2)
+        glove.calibrate()
+        print("提示: 使用1s内的平均力进行去皮，然后再启动输出。")
+        tare_sums = {}
+        tare_cnts = {}
+        tare_end = time.time() + 1.0
+        while time.time() < tare_end:
+            batch = glove.poll()
+            for frame in batch:
+                ch = int(frame.channel)
+                if ch not in tare_sums:
+                    tare_sums[ch] = [0.0, 0.0, 0.0]
+                    tare_cnts[ch] = 0
+                tare_sums[ch][0] += float(frame.fx)
+                tare_sums[ch][1] += float(frame.fy)
+                tare_sums[ch][2] += float(frame.fz)
+                tare_cnts[ch] += 1
+            time.sleep(0.002)
+
+        tare_offsets = {}
+        for ch, sums in tare_sums.items():
+            n = max(tare_cnts.get(ch, 0), 1)
+            tare_offsets[ch] = (sums[0] / n, sums[1] / n, sums[2] / n)
+
+        print("Calibrated! Press Ctrl+C to stop.")
+
+        try:
+            while True:
+                batch = glove.poll()
+                for frame in batch:
+                    ch = int(frame.channel)
+                    off = tare_offsets.get(ch, (0.0, 0.0, 0.0))
+                    fx = float(frame.fx) - off[0]
+                    fy = float(frame.fy) - off[1]
+                    fz = float(frame.fz) - off[2]
+                    print(
+                        f"CH {frame.channel} | "
+                        f"Force: ({fx:5.1f}, {fy:5.1f}, {fz:5.1f}) N | "
+                        f"Pos: ({frame.x:4.1f}, {frame.y:4.1f}) mm"
+                    )
+                time.sleep(0.02)
+        except KeyboardInterrupt:
+            print("Stopping..."
+            import sys
+            print("Exiting with block...", file=sys.stderr))
+                print("after with block...", file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
