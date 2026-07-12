@@ -2,7 +2,7 @@
 
 > **用途**：本文件帮助 AI 助手在每次对话中快速了解项目全貌，实现持续跟进。
 > **维护规则**：每次与 AI 协作完成重要工作后，更新本文件对应的部分。
-> **最后更新**：2026-06-21 22:40
+> **最后更新**：2026-07-12 19:40
 
 ---
 
@@ -11,11 +11,11 @@
 | 项目 | 内容 |
 |------|------|
 | **项目名称** | 假肢机械臂 |
-| **项目路径** | `d:\假肢机械臂\`（文档）+ `D:\Dev\arm-ble\`（nRF52固件）+ `D:\Dev\arm-ble-s3\`（ESP32-S3固件）+ `D:\Dev\arm-ble-gui\`（上位机） |
+| **项目路径** | `d:\假肢机械臂\`（文档）+ `D:\Dev\arm-ble\`（nRF52固件）+ `D:\Dev\arm-ble-s3\`（ESP32-S3固件）+ `D:\Dev\arm-ble-gui\`（上位机）+ `D:\Dev\data-collection\`（数据采集） |
 | **GitHub** | `prosthetic-robotic-arm` |
 | **负责人** | （你的名字 / 年级：大二下） |
 | **开始时间** | 2026年6月 |
-| **当前阶段** | ✅ ③号板联调一遍过 | ✅ 全链路交付 | ✅ v2.10 长按区分 | 期末复习 |
+| **当前阶段** | ✅ ③号板联调 | ✅ 全链路交付 | ✅ v2.10 长按区分 | ✅ D435i 相机打通 | ✅ WSL2 数据采集环境就绪 |
 
 ## 2. 当前任务背景
 
@@ -62,11 +62,12 @@
 | nRF52 固件（当前主交付） | `D:\Dev\arm-ble\` | [arm-ble-firmware](https://github.com/suancaiyu10108899/arm-ble-firmware) | PlatformIO（nordicnrf52） |
 | ESP32-S3 固件（备用） | `D:\Dev\arm-ble-s3\` | [arm-ble-s3-firmware](https://github.com/suancaiyu10108899/arm-ble-s3-firmware) | PlatformIO（espressif32） |
 | 上位机 GUI | `D:\Dev\arm-ble-gui\` | [arm-ble-gui](https://github.com/suancaiyu10108899/arm-ble-gui) | Qt 6.11 + CMake + MSVC |
+| 数据采集 Pipeline | `D:\Dev\data-collection\` | —（本地） | WSL2 + Python 3.12 + ONNX Runtime GPU |
 | ESP32 固件（已废板） | `D:\Dev\arm-ble-esp32\` | —（本地存档） | PlatformIO（espressif32） |
 
 > PlatformIO 命令入口：`python -m platformio run --project-dir=<path> --target upload`
 
-## 3. 当前交付状态（2026-06-21 22:40）
+## 3. 当前交付状态（2026-07-12 19:40）
 
 ### nRF52840 新板（主交付） ✅ 一遍过
 
@@ -84,6 +85,27 @@
 | **固件 v1-final** | `D:\Dev\arm-ble-s3\src\main.cpp` | ✅ NimBLE + NeoPixel + UART TX=GPIO17 |
 | 协议解析器 | `D:\Dev\arm-ble-s3\src\handle_parser.h/cpp` | ✅ |
 | platformio.ini | `D:\Dev\arm-ble-s3\platformio.ini` | ✅（NimBLE + NeoPixel 依赖） |
+
+### D435i 相机 ✅ 全部打通
+
+| 交付物 | 说明 | 状态 |
+|--------|------|:---:|
+| SDK v2.58.2 | Intel.RealSense.SDK-Win10.exe | ✅ |
+| 四路流 | RGB + 深度 + 加速度计 + 陀螺仪 | ✅ |
+| 相机内参 | Depth/RGB 的 fx/fy/cx/cy 已记录 | ✅ |
+| Python 验证脚本 | `D:\Dev\realsense-d435i\verify_d435i.py` | ✅ |
+| 交付包 | `05_实验数据/D435i/` | ✅ |
+
+### WSL2 数据采集环境 ✅
+
+| 组件 | 说明 | 状态 |
+|------|------|:---:|
+| WSL2 | Ubuntu 22.04, 默认用户 tb137 | ✅ |
+| Python 依赖 | numpy/opencv/PySide6/onnxruntime-gpu/cryptography/sympy | ✅ |
+| ONNX Runtime GPU | CUDAExecutionProvider + TensorrtExecutionProvider | ✅ |
+| GPU | NVIDIA GeForce RTX 4060 Laptop GPU, 8GB, Driver 560.94 | ✅ |
+| TouchGlove SDK | `touch_glove.sdk` 子模块可用 | ✅ |
+| WSL2 存储位置 | D 盘 `/dev/sdd` 1007G | ✅ |
 
 ### 备份
 
@@ -163,6 +185,8 @@
 - ❌ 夹爪舵机故障（插头有电，舵机本体不转，待学长更换）
 - ✅ **③号板通信联调 —— 6/19 下午一遍过**
 - ✅ **v2.10 长按区分 —— 6/21 部署**
+- ✅ **D435i 相机 SDK + 四路流 —— 7/10 打通**
+- ✅ **WSL2 数据采集环境 —— 7/12 完成**
 - 🟡 **CodexPad-C10 手柄**：待到手，协议已分析完毕
 - 🟡 **arm-ble-gui BLE 设备列表不显示**（跨线程信号/槽，Qt 6.11 + MSVC）
 - 🟡 **舵机限位/角度** —— 学长确认中
@@ -241,3 +265,8 @@
 | UART TX 调试全记录 | `../Dev/arm-ble/docs/debug-log/2026-06-17_UART_TX调试全记录.md` | 7轮测试+结论 |
 | NimBLE BLE 调试 | `../Dev/arm-ble-esp32/README.md` | ESP32 v1→v6 全记录 + GATT UUID dump |
 | 6/21 日总结 | `08_周报与汇报/日总结_2026-06-21.md` | v2.10 改动 + 仓库公开 + 远程烧录全过程 |
+| D435i 相机打通 | `07_学习笔记/传感器与信号处理/D435i相机打通记录_20260710.md` | SDK 安装 + 四路流验证 + 内参记录 |
+| 新硬件接入方法论 | `07_学习笔记/嵌入式开发/新硬件接入通用方法论_20260710.md` | 新硬件接入标准流程 |
+| 多设备同步采集 | `07_学习笔记/传感器与信号处理/多设备同步采集体系深度探索_20260711.md` | D435i + TouchGlove + BLE 同步架构 |
+| 完整体系实施路线图 | `09_项目管理/完整体系实施路线图_20260711.md` | 项目整体规划 |
+| 7/12 日总结 | `08_周报与汇报/日总结_2026-07-12.md` | WSL2 迁移 + 综合验证 |
