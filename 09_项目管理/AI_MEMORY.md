@@ -15,7 +15,7 @@
 | **GitHub** | `prosthetic-robotic-arm` |
 | **负责人** | （你的名字 / 年级：大二下） |
 | **开始时间** | 2026年6月 |
-| **当前阶段** | ✅ ③号板联调 | ✅ v2.10 长按区分 | ✅ D435i 相机打通 | ✅ TouchGlove 手套打通 (含 GUI) |
+| **当前阶段** | ✅ ③号板联调 | ✅ v2.10 长按区分 | ✅ D435i 相机打通 | ✅ TouchGlove 手套打通 (含 GUI) | ✅ SparQi手环打通 |
 
 ## 2. 开发环境
 
@@ -35,7 +35,7 @@
 | nRF52840 BLE 桥 | UART TX D0 | 裸机 | ✅ v2.10 主交付 |
 | ESP32-S3 BLE 桥 | UART TX GPIO17 | 裸机 | ✅ v1-final 备用 |
 | **TouchGlove 手套** | **COM5→TCP→WSL2** | **WSL2 + CUDA** | **✅ 7/12 打通 → 7/13 GUI 打通** |
-| Spar Qi 手环 | BLE→COM6 | Windows Python 3.10 | ✅ 7/13 打通！Workbench 开发中（sparmqi-workbench）|
+| Spar Qi 手环 | BLE→COM6 | Windows Python 3.10 | ✅ 7/13 打通！Workbench v1.0 (start_capture ACK超时待修复) |
 | NOKOV 动捕 | 局域网→XINGYING (10.1.1.198) | Windows | 🟡 SDK 已归档（含 Python/C#/Linux），待验证 |
 
 ### TouchGlove 连接架构
