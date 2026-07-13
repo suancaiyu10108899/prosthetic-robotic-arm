@@ -35,7 +35,7 @@
 | nRF52840 BLE 桥 | UART TX D0 | 裸机 | ✅ v2.10 主交付 |
 | ESP32-S3 BLE 桥 | UART TX GPIO17 | 裸机 | ✅ v1-final 备用 |
 | **TouchGlove 手套** | **COM5→TCP→WSL2** | **WSL2 + CUDA** | **✅ 7/12 打通 → 7/13 GUI 打通** |
-| Spar Qi 手环 | BLE→COM7 | Windows Python 3.10 | 🟡 SDK 已归档（spar-qi26.5.19），待建 venv |
+| Spar Qi 手环 | BLE→COM6 | Windows Python 3.10 | ✅ 7/13 打通！5s采集4944点，CH1/CH8活跃(std=1840/2775) |
 | NOKOV 动捕 | 局域网→XINGYING (10.1.1.198) | Windows | 🟡 SDK 已归档（含 Python/C#/Linux），待验证 |
 
 ### TouchGlove 连接架构
