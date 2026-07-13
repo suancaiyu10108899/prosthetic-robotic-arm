@@ -2,7 +2,7 @@
 
 > **用途**：本文件帮助 AI 助手在每次对话中快速了解项目全貌，实现持续跟进。
 > **维护规则**：每次与 AI 协作完成重要工作后，更新本文件对应的部分。
-> **最后更新**：2026-07-13 12:10
+> **最后更新**：2026-07-13 16:56
 
 ---
 
@@ -36,7 +36,6 @@
 | ESP32-S3 BLE 桥 | UART TX GPIO17 | 裸机 | ✅ v1-final 备用 |
 | **TouchGlove 手套** | **COM5→TCP→WSL2** | **WSL2 + CUDA** | **✅ 7/12 打通 → 7/13 GUI 打通** |
 | Spar Qi 手环 | BLE→COM7 | Windows Python 3.10 | 🟡 SDK 已归档（spar-qi26.5.19），待建 venv |
-| NOKOV 动捕 | 局域网→XINGYING (10.1.1.198) | Windows | 🟡 SDK 已归档（含 Python/C#/Linux），待验证 |
 | NOKOV 动捕 | 局域网→XINGYING (10.1.1.198) | Windows | 🟡 SDK 已归档（含 Python/C#/Linux），待验证 |
 
 ### TouchGlove 连接架构
@@ -155,3 +154,5 @@ wsl -d Ubuntu-22.04 bash D:\Dev\data-collection\scripts\wsl_gui_launcher.sh
 | `../Dev/data-collection/docs/debug-log/2026-07-12_手套USB直通排查.md` | 手套 USB 打通全记录 |
 | `../Dev/data-collection/docs/debug-log/2026-07-13_GUI打通全记录.md` | GUI 打通全记录（本次） |
 | `09_项目管理/完整体系实施路线图_20260711.md` | 项目整体规划 |
+| `09_项目管理/任务看板.md` | 当前任务看板 |
+| `09_项目管理/问题追踪.md` | 历史问题与踩坑记录 |
