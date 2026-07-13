@@ -35,8 +35,9 @@
 | nRF52840 BLE 桥 | UART TX D0 | 裸机 | ✅ v2.10 主交付 |
 | ESP32-S3 BLE 桥 | UART TX GPIO17 | 裸机 | ✅ v1-final 备用 |
 | **TouchGlove 手套** | **COM5→TCP→WSL2** | **WSL2 + CUDA** | **✅ 7/12 打通 → 7/13 GUI 打通** |
-| Spar Qi 手环 | BLE→COM7 | Windows Python 3.10 | ⬜ 待硬件 |
-| NOKOV 动捕 | 局域网 | Windows | ⬜ 待硬件 |
+| Spar Qi 手环 | BLE→COM7 | Windows Python 3.10 | 🟡 SDK 已归档（spar-qi26.5.19），待建 venv |
+| NOKOV 动捕 | 局域网→XINGYING (10.1.1.198) | Windows | 🟡 SDK 已归档（含 Python/C#/Linux），待验证 |
+| NOKOV 动捕 | 局域网→XINGYING (10.1.1.198) | Windows | 🟡 SDK 已归档（含 Python/C#/Linux），待验证 |
 
 ### TouchGlove 连接架构
 
@@ -89,7 +90,16 @@
 
 **关键结论**：WSLg 的 RDP RAIL 转发只处理 X11 窗口（通过 XWayland）。Qt 原生 Wayland surfaces 虽然成功创建并注册 Rail 映射，但像素数据不转发。**解决方案是强制 `QT_QPA_PLATFORM=xcb`**。
 
-## 6. 待解决问题
+## 6. 未打通设备的SDK 档案位置
+
+| 设备 | SDK 路径 | 内容 |
+|:--|:--|:--|
+| Spar Qi 肌电手环 | `D:\动捕+机电手环资料\spar-qi26.5.19\spar-qi26.5.19\spar-qi\` | Python SDK + .git + emg_data（需手动 setup venv） |
+| NOKOV 动捕 | `D:\动捕+机电手环资料\NOKOV\NOKOV\` | XING_Python_SDK-2.4.0 + XINGYING 安装包 + C#/Linux SDK + PDF 手册 |
+
+> ⚠️ 注意：之前的 README 中引用 `D:\Dev\sparqi-env\.venv` 和 `nokovpy 3.0.1`，但这些可能未实际安装。实际 SDK 在 `D:\动捕+机电手环资料\`。
+
+## 7. 待解决问题
 
 - ❌ 夹爪舵机故障（待学长更换）
 - 🟡 CodexPad-C10 手柄（待到手）
@@ -97,7 +107,7 @@
 - 🟡 舵机限位/角度 / GX12 母头引脚（等学长确认）
 - 🟡 手套 soft filter / 校准 SOP（使用前需确认）
 
-## 7. 新增脚本清单（data-collection/scripts/）
+## 8. 新增脚本清单（data-collection/scripts/）
 
 | 脚本 | 用途 |
 |------|------|
@@ -118,7 +128,7 @@
 | `check_wslg.sh` | WSLg PySide6/matplotlib 快速诊断 |
 | `start_glove.ps1` | PowerShell 一键启动脚本（含 --gui 开关） |
 
-## 8. 配置文件变更
+## 9. 配置文件变更
 
 | 文件 | 变更 | 原因 |
 |------|------|------|
@@ -126,7 +136,7 @@
 | `wsl_gui_launcher.sh` | `QT_QPA_PLATFORM=xcb` | 绕过 WSLg wayland 不转发 bug |
 | PySide6 版本 | 6.5.3（从 6.11.1 降级） | 6.11.1 的 xcb 插件缺系统库依赖 |
 
-## 9. 一键启动命令（当前生效）
+## 10. 一键启动命令（当前生效）
 
 ```powershell
 # 窗口A: TCP 桥（常驻后台）
@@ -136,7 +146,7 @@ python D:\Dev\data-collection\scripts\glove_serial_bridge.py
 wsl -d Ubuntu-22.04 bash D:\Dev\data-collection\scripts\wsl_gui_launcher.sh
 ```
 
-## 10. 学习笔记索引
+## 11. 学习笔记索引
 | 笔记 | 内容 |
 |------|------|
 | `07_学习笔记/传感器与信号处理/D435i相机打通记录_20260710.md` | D435i SDK + 四路流 + 内参 |
