@@ -93,10 +93,10 @@
 
 | 设备 | SDK 路径 | 内容 |
 |:--|:--|:--|
-| Spar Qi 肌电手环 | `D:\动捕+机电手环资料\spar-qi26.5.19\spar-qi26.5.19\spar-qi\` | Python SDK + .git + emg_data（需手动 setup venv） |
+| Spar Qi 肌电手环 | `D:\Dev\sparqi-env\` | ✅ SDK + .venv(Python 3.10) + wheel + emg_data + sync_data |
 | NOKOV 动捕 | `D:\动捕+机电手环资料\NOKOV\NOKOV\` | XING_Python_SDK-2.4.0 + XINGYING 安装包 + C#/Linux SDK + PDF 手册 |
 
-> ⚠️ 注意：之前的 README 中引用 `D:\Dev\sparqi-env\.venv` 和 `nokovpy 3.0.1`，但这些可能未实际安装。实际 SDK 在 `D:\动捕+机电手环资料\`。
+> ✅ 已整理：SDK 代码 + .venv(Python 3.10 已配好) + wheel + sync_data 全部归位到 `D:\Dev\sparqi-env\`。上次实验数据（电极悬空）已标记无效。
 
 ## 7. 待解决问题
 
