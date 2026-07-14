@@ -3,7 +3,7 @@
 > **项目负责人**：(你的名字)
 > **实验室**：(实验室名称)
 > **开始时间**：2026年6月
-> **最后更新**：2026-07-14
+> **最后更新**：2026-07-14 20:15
 
 ---
 
@@ -29,38 +29,49 @@
 | 设备 | 日期 | 状态 |
 |:--|:--:|:--:|
 | D435i 深度相机 | 7/10 | ✅ 四路流 + 内参 |
-| Spar Qi 肌电手环 #1 (Band3BA) | 7/13 | ✅ BLE 打通, ACK 超时待回归 |
-| Spar Qi 肌电手环 #2 (Band794) | 7/14 | ✅ BLE 全链路一次通过 |
+| SparQi 手环 #1 (Band3BA) | 7/13 | ✅ BLE 打通, ACK超时待回归 |
+| SparQi 手环 #2 (Band794) | 7/14 | ✅ BLE 全链路一次通过 |
 | TouchGlove 手套 | 7/12→7/13 | ✅ USB→GUI 全通 |
-| NOKOV 动捕 | — | 🟡 SDK 已归档，待连接 |
+| NOKOV 动捕 | — | 🟡 SDK已归档，待连接 |
 
 ### 终态架构
 
 ```
 一次实验 = 四设备同时采集:
   ┌─ D435i 相机      → RGB .mp4 + 帧索引 CSV
-  ├─ Spar Qi 手环 x2  → 9ch EMG 1000Hz + IMU CSV
+  ├─ SparQi 手环 x2   → 9ch EMG 1000Hz + IMU CSV
   ├─ TouchGlove 手套  → 5×32×32×3 force+disp .npy
   └─ NOKOV 动捕      → 7 markers 3D 坐标 CSV
 ```
 
+### SparQi Workbench v1.6 (PRIVATE GitHub)
+
+| 功能 | 说明 |
+|------|------|
+| BLE 交互 | 两步走：扫描→选设备+勾IMU→连接 |
+| 实时显示 | 9宫格EMG + 通道对比 + IMU(加速度+陀螺仪) |
+| 信号处理 | 10Hz高通/50Hz陷波/带通/整流/RMS包络，可切换 |
+| 视图控制 | 滚轮缩放 + 右键平移 + 重置自适应 |
+| 录制 | session目录存储 + index.csv索引 + 备注 |
+| 回放 | 进度条拖动 + 播放/暂停 + 0.5-4x倍速 |
+
 ### 手环关键信息
 
-- **硬件**: 14 物理电极 → 9 EMG 通道 + 6轴 IMU (加速度+陀螺仪)
-- **通信**: BLE → COM6, 1000Hz 标称采样率
-- **SDK**: ResearchKit_SDK v1.0.0 (Python 3.10 .pyd)
-- **工具**: Workbench v1.1 (PyQt5 可视化+录制)
+- **硬件**: 14电极→9 EMG通道 + 6轴IMU + 疑似PPG
+- **通信**: BLE→COM6, 1000Hz标称 (Band794实测~682Hz)
+- **SDK**: ResearchKit_SDK v1.0.0 (Python 3.10 .pyd, 闭源)
+- **仓库**: `sparmqi-workbench` **PRIVATE**
 
 ## 开发环境
 
 | 项目 | 路径 | 技术栈 | 用途 |
 |------|------|------|:--:|
 | 文档仓库 | `d:\假肢机械臂\` | Git + Markdown | 全局 |
-| nRF52 固件 | `D:\Dev\arm-ble\` | PlatformIO | 📦 完结 |
-| ESP32-S3 固件 | `D:\Dev\arm-ble-s3\` | PlatformIO | 📦 完结 |
-| 上位机 GUI | `D:\Dev\arm-ble-gui\` | Qt 6.11 + MSVC | 📦 完结 |
-| 数据采集 | `D:\Dev\data-collection\` | WSL2 + Python 3.10 + CUDA | 🔵 |
-| 手环 Workbench | `D:\Dev\sparmqi-workbench\` | PyQt5 + pyqtgraph + scipy | 🔵 |
+| 手环工作台 | `D:\Dev\sparmqi-workbench\` | PyQt5+pyqtgraph+scipy | 🔵 v1.6 |
+| 手套管线 | `D:\Dev\data-collection\` | WSL2+Python 3.10+CUDA | 🔵 |
+| nRF52固件 | `D:\Dev\arm-ble\` | PlatformIO | 📦 完结 |
+| ESP32-S3固件 | `D:\Dev\arm-ble-s3\` | PlatformIO | 📦 完结 |
+| 上位机GUI | `D:\Dev\arm-ble-gui\` | Qt 6.11+MSVC | 📦 完结 |
 
 ## 目录导航
 
@@ -69,9 +80,9 @@
 | `00_原始压缩包归档/` | 各模块原始压缩包备份 |
 | `01_机械结构/` | SW源文件、STL打印件、STEP、电池盒 |
 | `02_电子与控制/` | 系统架构、元器件清单、电池模块、控制板 |
-| `03_嵌入式代码/` | Arduino 固件 |
-| `04_上位机/` | PC 端控制软件 |
-| `05_实验数据/` | 测试记录、D435i 验证、3D 打印采购 |
+| `03_嵌入式代码/` | Arduino固件 |
+| `04_上位机/` | PC端控制软件 |
+| `05_实验数据/` | 测试记录、D435i验证、3D打印采购 |
 | `06_文献与参考资料/` | SDK、手册、TouchGlove/SparQi/NOKOV/DAP |
 | `07_学习笔记/` | 个人学习记录 |
 | `08_周报与汇报/` | 周报、日总结、阶段回顾 |
@@ -82,6 +93,4 @@
 - [任务看板](./任务看板.md)
 - [AI 记忆文件](./AI_MEMORY.md)
 - [完整体系实施路线图](./完整体系实施路线图_20260711.md)
-- [问题追踪](./问题追踪.md)
 - [机械臂控制完结归档](../08_周报与汇报/阶段回顾_机械臂控制完结_20260714.md)
-- [系统架构说明](../02_电子与控制/系统架构说明.md)
